@@ -1,6 +1,6 @@
 # Frontend
 
-A@mtogo.dk
-C@mtogo.dk
-D@mtogo.dk
-R@mtogo.dk
+A@mtogo.dk : Agent
+C@mtogo.dk : Customer 
+D@mtogo.dk : Dashboard
+R@mtogo.dk : Restaurant
