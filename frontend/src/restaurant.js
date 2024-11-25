@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import useWebSocket from "./hooks/useWebSocket";
 import {
   Table,
   TableBody,
@@ -18,9 +19,22 @@ const Restaurant = props => {
   const navigate = useNavigate();
   const [userlogout, setUserlogout] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
-  useEffect(() => {
-    console.log("kørt");
+  const { data, isConnected } = useWebSocket();
+  const [orders, setOrders] = useState([]);
+  const [error, setError] = useState("");
 
+  useEffect(() => {
+    console.log("Vis forbindelse: " + isConnected);
+    if (data) {
+      // Add the new order to the list
+      setOrders(prevOrders => [...prevOrders, data]);
+      console.log("----WebSocket er kørt----");
+      console.log(data);
+      console.log(isConnected);
+    }
+  }, [data]);
+
+  useEffect(() => {
     console.log(user);
     // If the token/email does not exist, mark the user as logged out
     if (
@@ -37,18 +51,36 @@ const Restaurant = props => {
     setUserlogout(!userlogout);
   };
 
-  const rows = [
-    { id: 1, name: "pizza", age: 28 },
-    { id: 2, name: "cola", age: 34 },
-    { id: 3, name: "Alice Johnson", age: 45 },
-  ];
+  const getPendingOrders = async () => {
+    console.log("getPendingOrders");
+    try {
+      setError(""); // Clear previous errors
+      const response = await fetch(
+        `http://localhost:5194/api/orders/pending/1AC2ED88-C5B3-4043-80C3-1CE7A64C3132`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setOrders(data);
+    } catch (err) {
+      setError(err.message); // Handle errors
+    }
+  };
+
+  useEffect(() => {
+    getPendingOrders();
+  }, []);
 
   const handleButtonClick = row => {
     alert(`Button clicked for ${row.name}`);
   };
   const viewOrder = row => {
     alert(`Button clicked for ${row.name}`);
-    rows.forEach(rows => {
+    row.forEach(rows => {
       return <div>{rows.name}</div>;
     });
   };
@@ -67,23 +99,21 @@ const Restaurant = props => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Age</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map(row => (
+              {orders.map(row => (
                 <TableRow key={row.id}>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.age}</TableCell>
+                  <TableCell>{row.totalPrice} DKK</TableCell>
+                  <TableCell>{row.orderStatus}</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => viewOrder(row)}>
+                      onClick={() => viewOrder(row.orderItems)}>
                       View Order
                     </Button>
                   </TableCell>
@@ -91,7 +121,7 @@ const Restaurant = props => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => handleButtonClick(row)}>
+                      onClick={() => handleButtonClick(row.id)}>
                       Ready To Pickup
                     </Button>
                   </TableCell>
