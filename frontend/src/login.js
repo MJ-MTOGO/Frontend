@@ -36,7 +36,7 @@ const Login = props => {
     e.preventDefault();
     try {
       const response = await fetch(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDrva9eFYN05ufdJGfR1FhfjQItSIRWYuk",
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyD244L5BpNgj4QNDtL7q1LH7i5DjswmYpk",
         {
           method: "POST", // Use the POST method
           headers: {

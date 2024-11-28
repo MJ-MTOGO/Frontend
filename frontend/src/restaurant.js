@@ -56,7 +56,7 @@ const Restaurant = props => {
     try {
       setError(""); // Clear previous errors
       const response = await fetch(
-        `http://localhost:5194/api/orders/pending/1AC2ED88-C5B3-4043-80C3-1CE7A64C3132`
+        `http://35.228.217.156/api/orders/pending/1AC2ED88-C5B3-4043-80C3-1CE7A64C3132`
       );
 
       if (!response.ok) {

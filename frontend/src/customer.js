@@ -22,7 +22,7 @@ const Customer = props => {
     try {
       setError(""); // Clear previous errors
       const response = await fetch(
-        `http://localhost:5139/api/Restaurant/by-city/${city}`
+        `http://35.228.217.156/api/Restaurant/by-city/${city}`
       );
 
       if (!response.ok) {
