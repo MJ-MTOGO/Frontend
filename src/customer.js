@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Grid from "@mui/material/Grid2"; // Import Grid v2
+// import Grid from "@mui/material/Grid2"; // Import Grid v2
 import Paper from "@mui/material/Paper";
 
 const Customer = props => {
@@ -126,14 +126,14 @@ const Customer = props => {
           <ul>
             {selectedMenuItems.map((result, index) => (
               <li key={index} style={{ marginBottom: "10px" }}>
-                <Grid container spacing={1}>
-                  <Grid item xs={12} md={4}>
+                <div container spacing={1}>
+                  <div item xs={12} md={4}>
                     <Paper>{result.name}</Paper>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
+                  </div>
+                  <div item xs={12} md={4}>
                     <Paper>Price: {result.price}</Paper>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
+                  </div>
+                  <div item xs={12} md={4}>
                     <Paper>
                       {" "}
                       <button
@@ -150,8 +150,8 @@ const Customer = props => {
                         Add to Cart
                       </button>
                     </Paper>
-                  </Grid>
-                </Grid>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
