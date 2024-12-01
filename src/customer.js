@@ -13,6 +13,41 @@ const Customer = props => {
   const [error, setError] = useState("");
   const [clickedRes, setClickedRes] = useState(null);
   const [selectedMenuItems, setSelectedMenuItems] = useState([]);
+  const apiRestaurantURl = process.env.REACT_APP_LocalapiRestaurantURl;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const apiOrderURl = process.env.apiOrderURl;
+  const [isLoading, setIsLoading] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const defaultOrder = {
+    customerId: "",
+    restaurantId: "",
+    orderItems: [],
+    street: "",
+    city: "",
+    postalCode: "",
+  };
+  const [createNewOrder, setCreateNewOrder] = useState({ ...defaultOrder });
+
+  const handleInputChange = e => {
+    const { name, value } = e.target;
+    setCreateNewOrder(prevOrder => ({
+      ...prevOrder,
+      [name]: value,
+    }));
+  };
+
+  const handlePayNow = () => {
+    setIsLoading(true); // Start loading
+    setTimeout(() => {
+      // Simulate payment processing
+      setIsLoading(false);
+      setPaymentSuccess(true); // Show success message
+      setTimeout(() => {
+        setPaymentSuccess(false);
+        setIsModalOpen(false); // Close modal
+      }, 2000); // Hide success message after 2 seconds
+    }, 3000); // Simulate 3 seconds of processing
+  };
   const handleSearch = async () => {
     if (!city.trim()) {
       setError("City cannot be empty");
@@ -20,9 +55,11 @@ const Customer = props => {
     }
 
     try {
+      console.log(city);
+      console.log(apiRestaurantURl);
       setError(""); // Clear previous errors
       const response = await fetch(
-        `http://35.228.217.156/api/Restaurant/by-city/${city}`
+        `${apiRestaurantURl}/api/Restaurant/by-city/${city}`
       );
 
       if (!response.ok) {
@@ -46,19 +83,32 @@ const Customer = props => {
     }
   }, [userlogout]);
 
-  const handleButtonClickRes = restaurantId => {
-    console.log(restaurantId);
+  const handleChooseArestaurantClickRes = restaurantId => {
     const selectedRestaurant = result.find(
       result => result.restaurantId === restaurantId
     );
     console.log(selectedRestaurant);
     if (selectedRestaurant && selectedRestaurant.menuItems) {
       setClickedRes(selectedRestaurant);
+      defaultOrder.customerId = "a4b1c2d3-e5f6-7890-abcd-1234567890ab";
+      defaultOrder.restaurantId = selectedRestaurant.restaurantId;
       setSelectedMenuItems(selectedRestaurant.menuItems);
     } else {
       setSelectedMenuItems([]); // No menu items
     }
   };
+
+  const handleAddToCart = item => {
+    console.log(item);
+    setCreateNewOrder(prevOrder => ({
+      ...prevOrder,
+      orderItems: [
+        ...prevOrder.orderItems,
+        { name: item.name, price: item.price },
+      ],
+    }));
+  };
+  const handleAddress = item => {};
 
   const secRes = () => {
     if (result === null) {
@@ -102,7 +152,9 @@ const Customer = props => {
               <li key={index} style={{ marginBottom: "10px" }}>
                 {result.name}{" "}
                 <button
-                  onClick={() => handleButtonClickRes(result.restaurantId)}
+                  onClick={() =>
+                    handleChooseArestaurantClickRes(result.restaurantId)
+                  }
                   style={{
                     padding: "5px 10px",
                     fontSize: "14px",
@@ -122,11 +174,12 @@ const Customer = props => {
     } else if (clickedRes !== null) {
       return (
         <div style={{ marginTop: "20px", textAlign: "center" }}>
+          <div></div>
           <h3>{clickedRes.name}:</h3>
           <ul>
             {selectedMenuItems.map((result, index) => (
               <li key={index} style={{ marginBottom: "10px" }}>
-                <div container spacing={1}>
+                <div container spacing={2}>
                   <div item xs={12} md={4}>
                     <Paper>{result.name}</Paper>
                   </div>
@@ -137,7 +190,7 @@ const Customer = props => {
                     <Paper>
                       {" "}
                       <button
-                        onClick={() => handleButtonClickRes(result.id)}
+                        onClick={() => handleAddToCart(result)}
                         style={{
                           padding: "5px 10px",
                           fontSize: "14px",
@@ -155,6 +208,28 @@ const Customer = props => {
               </li>
             ))}
           </ul>
+          <div>
+            <p2>Cart</p2>
+            <ul>
+              {createNewOrder.orderItems.map((result, index) => (
+                <li key={index} style={{ marginBottom: "10px" }}>
+                  <div container spacing={2}>
+                    <div item xs={12} md={4}>
+                      <Paper>{result.name}</Paper>
+                    </div>
+                    <div item xs={12} md={4}>
+                      <Paper>Price: {result.price}</Paper>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              style={{ marginBottom: "20px" }}>
+              Order now
+            </button>
+          </div>
         </div>
       );
     }
@@ -168,9 +243,121 @@ const Customer = props => {
     <div className="mainContainer">
       <div style={{ fontSize: "50px" }}>Order</div>
       {secRes()}
+      {isModalOpen && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h2>Enter Your Address</h2>
+            {isLoading ? (
+              <div style={styles.loadingContainer}>
+                <p>Processing Payment...</p>
+              </div>
+            ) : paymentSuccess ? (
+              <div style={styles.successContainer}>
+                <p>Payment went through successfully! 🎉</p>
+              </div>
+            ) : (
+              <>
+                <label>
+                  Street:
+                  <input
+                    type="text"
+                    name="street"
+                    value={createNewOrder.street}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                  />
+                </label>
+                <label>
+                  City:
+                  <input
+                    type="text"
+                    name="city"
+                    value={createNewOrder.city}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                  />
+                </label>
+                <label>
+                  Postal Code:
+                  <input
+                    type="text"
+                    name="postalCode"
+                    value={createNewOrder.postalCode}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                  />
+                </label>
+                <button onClick={handlePayNow} style={styles.button}>
+                  Pay Now
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  style={styles.closeButton}>
+                  Close
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <button onClick={logout}>Logout</button>
     </div>
   );
+};
+
+// Basic styles
+const styles = {
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "8px",
+    width: "300px",
+    textAlign: "center",
+  },
+  input: {
+    width: "90%",
+    padding: "8px",
+    margin: "10px 0",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
+  },
+  button: {
+    backgroundColor: "#4CAF50",
+    color: "white",
+    padding: "10px 15px",
+    margin: "10px",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  closeButton: {
+    backgroundColor: "#f44336",
+    color: "white",
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+  },
+  loadingContainer: {
+    fontSize: "16px",
+    color: "#555",
+  },
+  successContainer: {
+    fontSize: "16px",
+    color: "green",
+  },
 };
 
 export default Customer;
