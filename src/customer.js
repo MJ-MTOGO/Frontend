@@ -15,9 +15,14 @@ const Customer = props => {
   const [selectedMenuItems, setSelectedMenuItems] = useState([]);
   const apiRestaurantURl = process.env.REACT_APP_LocalapiRestaurantURl;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const apiOrderURl = process.env.apiOrderURl;
+  const apiOrderURl = process.env.REACT_APP_apiOrderURL;
   const [isLoading, setIsLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const paymentOrder = {
+    orderId: "12345",
+    amount: 100.0,
+    paymentMethod: "CreditCard",
+  };
   const defaultOrder = {
     customerId: "",
     restaurantId: "",
@@ -36,17 +41,53 @@ const Customer = props => {
     }));
   };
 
-  const handlePayNow = () => {
+  const handlePayNow = async () => {
     setIsLoading(true); // Start loading
-    setTimeout(() => {
-      // Simulate payment processing
+
+    try {
+      const response = await fetch(`${apiOrderURl}/api/Payment`, {
+        method: "POST", // HTTP method
+        headers: {
+          "Content-Type": "application/json", // Specify content type
+        },
+        body: JSON.stringify(paymentOrder), // Convert order object to JSON string
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
       setIsLoading(false);
       setPaymentSuccess(true); // Show success message
-      setTimeout(() => {
+      console.log(createNewOrder);
+      try {
+        const response = await fetch(`${apiOrderURl}/api/orders`, {
+          method: "POST", // HTTP method
+          headers: {
+            "Content-Type": "application/json", // Specify content type
+          },
+          body: JSON.stringify(createNewOrder), // Convert order object to JSON string
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
         setPaymentSuccess(false);
         setIsModalOpen(false); // Close modal
-      }, 2000); // Hide success message after 2 seconds
-    }, 3000); // Simulate 3 seconds of processing
+        setCreateNewOrder({ ...defaultOrder });
+        setResult(null);
+        setClickedRes(null);
+        console.log("Payment successful:", result);
+      } catch (error) {
+        console.error("Error processing payment:", error);
+      }
+      console.log("Payment successful:", result);
+    } catch (error) {
+      console.error("Error processing payment:", error);
+    }
   };
   const handleSearch = async () => {
     if (!city.trim()) {
@@ -90,8 +131,11 @@ const Customer = props => {
     console.log(selectedRestaurant);
     if (selectedRestaurant && selectedRestaurant.menuItems) {
       setClickedRes(selectedRestaurant);
-      defaultOrder.customerId = "a4b1c2d3-e5f6-7890-abcd-1234567890ab";
-      defaultOrder.restaurantId = selectedRestaurant.restaurantId;
+      setCreateNewOrder(prevOrder => ({
+        ...prevOrder, // Spread existing order details
+        restaurantId: selectedRestaurant.restaurantId, // Update restaurantId
+        customerId: "a4b1c2d3-e5f6-7890-abcd-1234567890ab", // Update customerId
+      }));
       setSelectedMenuItems(selectedRestaurant.menuItems);
     } else {
       setSelectedMenuItems([]); // No menu items

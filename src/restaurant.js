@@ -21,7 +21,16 @@ const Restaurant = props => {
   const user = JSON.parse(localStorage.getItem("user"));
   const { data, isConnected } = useWebSocket();
   const [orders, setOrders] = useState([]);
+  const apiRestaurantURl = process.env.REACT_APP_LocalapiRestaurantURl;
+  const apiOrderURl = process.env.REACT_APP_apiOrderURL;
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [orderItems, setOrderItems] = useState([]);
+  const [updateOrderList, setUpdateOrderList] = useState(true);
+  const handleCloseModal = () => {
+    console.log("Ready to Pick Up");
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     console.log("Vis forbindelse: " + isConnected);
@@ -33,7 +42,11 @@ const Restaurant = props => {
       console.log(isConnected);
     }
   }, [data]);
-
+  const removeOrderById = idToRemove => {
+    setOrders(prevOrders =>
+      prevOrders.filter(order => order.orderId !== idToRemove)
+    );
+  };
   useEffect(() => {
     console.log(user);
     // If the token/email does not exist, mark the user as logged out
@@ -56,7 +69,7 @@ const Restaurant = props => {
     try {
       setError(""); // Clear previous errors
       const response = await fetch(
-        `http://35.228.217.156/api/orders/pending/1AC2ED88-C5B3-4043-80C3-1CE7A64C3132`
+        `${apiOrderURl}/api/orders/pending/1AC2ED88-C5B3-4043-80C3-1CE7A64C3132`
       );
 
       if (!response.ok) {
@@ -75,14 +88,44 @@ const Restaurant = props => {
     getPendingOrders();
   }, []);
 
-  const handleButtonClick = row => {
-    alert(`Button clicked for ${row.name}`);
+  const handleButtonClick = async row => {
+    console.log(row.orderId);
+    console.log(orders);
+    let orderId = {
+      orderId: row.orderId,
+    };
+    // send order id ready to pick
+    // status 200? dvs ok
+    // opdatere din list
+
+    console.log(orderId);
+
+    try {
+      const response = await fetch(
+        `${apiRestaurantURl}/api/Restaurant/readytopickup`,
+        {
+          method: "POST", // HTTP method
+          headers: {
+            "Content-Type": "application/json", // Specify content type
+          },
+          body: JSON.stringify(orderId), // Convert order object to JSON string
+        }
+      );
+      console.log(orders);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      removeOrderById(orderId.orderId);
+      const result = await response.json();
+      console.log("Payment successful:", result);
+      setUpdateOrderList(!updateOrderList);
+    } catch (error) {
+      console.error("Error processing ready to pickup:", error);
+    }
   };
   const viewOrder = row => {
-    alert(`Button clicked for ${row.name}`);
-    row.forEach(rows => {
-      return <div>{rows.name}</div>;
-    });
+    setOrderItems(row);
+    setIsModalOpen(true);
   };
   return (
     <div className="mainContainer">
@@ -121,7 +164,7 @@ const Restaurant = props => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => handleButtonClick(row.id)}>
+                      onClick={() => handleButtonClick(row)}>
                       Ready To Pickup
                     </Button>
                   </TableCell>
@@ -130,6 +173,65 @@ const Restaurant = props => {
             </TableBody>
           </Table>
         </TableContainer>
+        {isModalOpen && (
+          <div className="modal">
+            <div className="modal-content">
+              <h2>Order Items</h2>
+              <ul>
+                {orderItems.map((item, index) => (
+                  <li key={index}>
+                    {item.name} - ${item.price.toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+              <button onClick={handleCloseModal}>Close</button>
+            </div>
+            <div className="modal-backdrop" onClick={handleCloseModal}></div>
+          </div>
+        )}
+
+        {/* Modal styling */}
+        <style jsx>{`
+          .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+          }
+          .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          }
+          .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+          }
+          button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+          }
+          button:hover {
+            background: #0056b3;
+          }
+        `}</style>
       </div>
       <Button style={{ color: "black", fontSize: "18px" }} onClick={logout}>
         Logout
