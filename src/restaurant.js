@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import useWebSocket from "./hooks/useWebSocket";
 import {
   Table,
@@ -19,7 +17,8 @@ const Restaurant = props => {
   const navigate = useNavigate();
   const [userlogout, setUserlogout] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
-  const { data, isConnected } = useWebSocket();
+  const websocketURl = process.env.REACT_APP_WEBSOCKET_URL;
+  const { data, isConnected } = useWebSocket(websocketURl);
   const [orders, setOrders] = useState([]);
   const apiRestaurantURl = process.env.REACT_APP_LocalapiRestaurantURl;
   const apiOrderURl = process.env.REACT_APP_apiOrderURL;

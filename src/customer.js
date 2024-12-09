@@ -46,7 +46,7 @@ const Customer = props => {
 
     try {
       const response = await fetch(`${apiOrderURl}/api/Payment`, {
-        method: "POST", // HTTP method
+        method: "POST",
         headers: {
           "Content-Type": "application/json", // Specify content type
         },

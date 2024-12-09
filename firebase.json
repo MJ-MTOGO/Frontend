@@ -14,3 +14,28 @@
     ]
   }
 }
+
+
+omfomulere, retskriv men ikke gøre det korter dvs. ca. de samme antal ord hvis ikke lidt mere: 
+
+
+
+
+calculated-earnings-sub (order)
+
+
+order-delivered  (topic)
+
+order-delivered-sub     (order)
+order-delivered-sub1    (dashboard)
+order-delivered-sub2    (calculation)
+
+ready-to-pickup         (topic)
+ready-to-pickup-sub     (order)
+ready-to-pickup-sub1   (delivering)
+ready-to-pickup-sub2   (dashboard)
+
+OrderCreated         (Topic)
+OrderCreated-sub    (restaurant)
+OrderCreated-sub1  (delivering)
+OrderCreated-sub3  (dashboard)

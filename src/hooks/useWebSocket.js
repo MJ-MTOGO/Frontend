@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
-const useWebSocket = () => {
+const useWebSocket = webscoketUrl => {
   const [data, setData] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-
+  //process.env.REACT_APP_WEBSOCKET_URL
   useEffect(() => {
     // Use WebSocket URL from the environment variable
-    const ws = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+    const ws = new WebSocket(webscoketUrl);
 
     ws.onopen = () => {
       console.log("WebSocket connected");
